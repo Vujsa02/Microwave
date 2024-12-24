@@ -1,0 +1,197 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;c++;cppm;ixx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="Header Files">
+      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
+      <Extensions>h;hh;hpp;hxx;h++;hm;inl;inc;ipp;xsd</Extensions>
+    </Filter>
+    <Filter Include="Resource Files">
+      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
+      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
+    </Filter>
+    <Filter Include="Source Files\Shader">
+      <UniqueIdentifier>{7392c2e1-fe7d-475b-a6fa-95edd165351b}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="Microwave3D.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="ShaderUtils.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="background.frag">
+      <Filter>Source Files\Shader</Filter>
+    </None>
+    <None Include="background.vert">
+      <Filter>Source Files\Shader</Filter>
+    </None>
+    <None Include="button.frag">
+      <Filter>Source Files\Shader</Filter>
+    </None>
+    <None Include="button.vert">
+      <Filter>Source Files\Shader</Filter>
+    </None>
+    <None Include="food.frag">
+      <Filter>Source Files\Shader</Filter>
+    </None>
+    <None Include="food.vert">
+      <Filter>Source Files\Shader</Filter>
+    </None>
+    <None Include="glass.frag">
+      <Filter>Source Files\Shader</Filter>
+    </None>
+    <None Include="glass.vert">
+      <Filter>Source Files\Shader</Filter>
+    </None>
+    <None Include="light.frag">
+      <Filter>Source Files\Shader</Filter>
+    </None>
+    <None Include="light.vert">
+      <Filter>Source Files\Shader</Filter>
+    </None>
+    <None Include="microwave_light.frag">
+      <Filter>Source Files\Shader</Filter>
+    </None>
+    <None Include="microwave_light.vert">
+      <Filter>Source Files\Shader</Filter>
+    </None>
+    <None Include="smoke.frag">
+      <Filter>Source Files\Shader</Filter>
+    </None>
+    <None Include="smoke.vert">
+      <Filter>Source Files\Shader</Filter>
+    </None>
+    <None Include="packages.config" />
+    <None Include="basic.frag">
+      <Filter>Source Files\Shader</Filter>
+    </None>
+    <None Include="basic.vert">
+      <Filter>Source Files\Shader</Filter>
+    </None>
+    <None Include="door.frag">
+      <Filter>Source Files\Shader</Filter>
+    </None>
+    <None Include="door.vert">
+      <Filter>Source Files\Shader</Filter>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="ShaderUtils.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="stb_image.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="res\active_start.png">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\black_handle.png">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\blank_error.png">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\button_texture_1.png">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\button_texture_2.png">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\button_texture_3.png">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\button_texture_4.png">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\button_texture_5.png">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\button_texture_6.png">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\button_texture_7.png">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\button_texture_8.png">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\button_texture_9.png">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\button_texture_10.png">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\button_texture_11.png">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\button_texture_12.png">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\digital_number_0.jpg">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\digital_number_1.jpg">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\digital_number_2.jpg">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\digital_number_3.jpg">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\digital_number_4.jpg">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\digital_number_5.jpg">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\digital_number_6.jpg">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\digital_number_7.jpg">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\digital_number_8.jpg">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\digital_number_9.jpg">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\digital_number_e.png">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\digital_number_o.png">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\digital_number_r.png">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\error.png">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\name.png">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\pause.png">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\restart.png">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\round_pizza.png">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\unactive_start.png">
+      <Filter>Resource Files</Filter>
+    </Image>
+  </ItemGroup>
+</Project>

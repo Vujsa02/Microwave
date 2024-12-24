@@ -1,6 +1,13 @@
 # Prerequisites
 *.d
 
+*.ipch
+/build/
+/packages/
+
+# IDE Specific Files
+.vs/
+
 # Compiled Object files
 *.slo
 *.lo
