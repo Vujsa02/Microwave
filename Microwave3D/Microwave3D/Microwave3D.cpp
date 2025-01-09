@@ -4,6 +4,7 @@
 #define _CRT_SECURE_NO_WARNINGS
 #define CRES 30 // Circle Resolution = Rezolucija kruga
 #define STB_IMAGE_IMPLEMENTATION
+#define GLM_ENABLE_EXPERIMENTAL
 
 #include <iostream>
 #include <fstream>
@@ -20,6 +21,8 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/type_ptr.hpp>
 #include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/matrix_inverse.hpp>
+#include <glm/gtx/intersect.hpp>
 
 static unsigned loadImageToTexture(const char* filePath);
 
@@ -67,19 +70,19 @@ struct Button {
 };
 
 Button buttons[13] = {
-    { 0.43f, 0.0f, 0.08f, 0.15f, 1 }, // Button 1
-    { 0.51f, 0.0f, 0.08f, 0.15f, 2 },
-    { 0.59f, 0.0f, 0.08f, 0.15f, 3 },
-    { 0.43f, -0.15f, 0.08f, 0.15f, 4 },
-    { 0.51f, -0.15f, 0.08f, 0.15f, 5 },
-    { 0.59f, -0.15f, 0.08f, 0.15f, 6 },
-    { 0.43f, -0.3f, 0.08f, 0.15f, 7 },
-    { 0.51f, -0.3f, 0.08f, 0.15f, 8 },
-    { 0.59f, -0.3f, 0.08f, 0.15f, 9 },
-    { 0.43f, -0.45f, 0.08f, 0.15f, 11 },
-    { 0.51f, -0.45f, 0.08f, 0.15f, 0 },
-    { 0.59f, -0.45f, 0.08f, 0.15f, 12 },
-    { 0.51f, -0.7, 0.08f, 0.15f, 13}
+    { -0.2f, 0.0f, 0.08f, 0.15f, 1 }, // Button 1
+    { -0.28f, 0.0f, 0.08f, 0.15f, 2 },
+    { -0.36f, 0.0f, 0.08f, 0.15f, 3 },
+    { -0.2f,  -0.15f, 0.08f, 0.15f, 4 },
+    { -0.28f, -0.15f, 0.08f, 0.15f, 5 },
+    { -0.36f, -0.15f, 0.08f, 0.15f, 6 },
+    { -0.2f,  -0.3f, 0.08f, 0.15f, 7 },
+    { -0.28f, -0.3f, 0.08f, 0.15f, 8 },
+    { -0.36f, -0.3f, 0.08f, 0.15f, 9 },
+    { -0.2f,  -0.45f, 0.08f, 0.15f, 11 },
+    { -0.28f, -0.45f, 0.08f, 0.15f, 0 },
+    { -0.36f, -0.45f, 0.08f, 0.15f, 12 },
+    { -0.28f, -0.7, 0.08f, 0.15f, 13}
 };
 
 
@@ -98,6 +101,8 @@ int clockTimerNumbers[4] =
 {
     0,0,0,0
 };
+
+bool isMousePressed = false;
 bool isPowerOn = false;
 bool isOpened = false;
 bool isTrasparentWindow = true;
@@ -124,8 +129,18 @@ float microwaveGlassR = 173 / 255.0;
 float microwaveGlassG = 216 / 255.0;
 float microwaveGlassB = 230 / 255.0;
 
+bool isCameraLocked = false;
+bool isOpening = false;
+bool isClosing = false;
+float doorAngle = 0.0f; // Current angle of the door
+float maxDoorAngle = glm::radians(90.0f); // Maximum rotation (90 degrees)
+float doorSpeed = glm::radians(45.0f); // Rotation speed in radians per second
+
 void mouse_callback(GLFWwindow* window, double xpos, double ypos)
 {
+    if (isCameraLocked) {
+        return;
+    }
     if (firstMouse)
     {
         lastX = xpos;
@@ -200,6 +215,176 @@ void updateView(unsigned int shaders[], size_t shaderCount, glm::vec3 cameraPos,
     }
 }
 
+void renderButtons(unsigned int buttonShader, unsigned int buttonVAO, unsigned int* buttonTextures, glm::mat4 model) {
+    glUseProgram(buttonShader);
+    glBindVertexArray(buttonVAO);
+    glUniformMatrix4fv(glGetUniformLocation(buttonShader, "uM"), 1, GL_FALSE, glm::value_ptr(model));
+
+    for (int i = 0; i < 13; ++i) {
+        // Bind the texture for the current button
+        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_2D, buttonTextures[i]);
+        if (i == 11) {
+            if (isPowerOn) {
+                glBindTexture(GL_TEXTURE_2D, buttonTextures[i + 2]);
+            }
+        }
+        else if (i == 12) {
+            glEnable(GL_BLEND);
+            glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+            glUniform1i(glGetUniformLocation(buttonShader, "uTex"), 0);
+
+            // Draw the button
+            glDrawArrays(GL_TRIANGLE_STRIP, i * 4, 4);
+            glDisable(GL_BLEND);
+            break;
+        }
+        glUniform1i(glGetUniformLocation(buttonShader, "uTex"), 0);
+
+        // Draw the button
+        glDrawArrays(GL_TRIANGLE_STRIP, i * 4, 4);
+    }
+
+    glBindTexture(GL_TEXTURE_2D, 0); // Unbind texture
+    glBindVertexArray(0);
+    glUseProgram(0);
+}
+
+
+void countdown() {
+    while (isPowerOn) {
+        // Simulate a 1-second delay
+        std::this_thread::sleep_for(std::chrono::seconds(1));
+        if (!isPowerOn) {
+            break;
+        }
+        // Perform the countdown
+        for (int i = 3; i >= 0; --i) {
+            if (clockTimerNumbers[i] > 0) {
+                --clockTimerNumbers[i];
+                break;
+            }
+            else if (i > 0) {
+                if (i == 2) {
+                    clockTimerNumbers[i] = 5; // Set to 5 when the third digit reaches 0
+                }
+                else {
+                    clockTimerNumbers[i] = 9; // Default reset to 9
+                }
+            }
+        }
+
+
+        // Check if the timer is all zeros
+        if (clockTimerNumbers[0] == 0 && clockTimerNumbers[1] == 0 &&
+            clockTimerNumbers[2] == 0 && clockTimerNumbers[3] == 0) {
+            isMicrowaveFinished = true;
+            isPowerOn = false; // Turn off the timer
+            lastTime = glfwGetTime();
+
+
+            std::thread([&]() {
+                std::this_thread::sleep_for(std::chrono::seconds(2));
+                isMicrowaveFinished = false;
+                }).detach();
+        }
+    }
+}
+
+// Helper function to generate ray
+glm::vec3 calculateMouseRay(float mouseX, float mouseY, glm::mat4 viewMatrix, glm::mat4 projectionMatrix, int screenWidth, int screenHeight) {
+    // Convert mouse position to NDC
+    float ndcX = (2.0f * mouseX) / screenWidth - 1.0f;
+    float ndcY = 1.0f - (2.0f * mouseY) / screenHeight; // Invert Y-axis
+    glm::vec4 clipCoords = glm::vec4(ndcX, ndcY, -1.0f, 1.0f);
+
+    // Unproject clip coordinates to view space
+    glm::vec4 eyeCoords = glm::inverse(projectionMatrix) * clipCoords;
+    eyeCoords.z = -1.0f;
+    eyeCoords.w = 0.0f;
+
+    // Unproject to world space
+    glm::vec3 worldRay = glm::vec3(glm::inverse(viewMatrix) * eyeCoords);
+    return glm::normalize(worldRay);
+}
+
+// Function to test ray against buttons
+void checkButtonPressWithRay(float mouseX, float mouseY, glm::mat4 viewMatrix, glm::mat4 projectionMatrix, int screenWidth, int screenHeight) {
+    std::cout << "Called method" << std::endl;
+    glm::vec3 rayOrigin = cameraPos; // Camera position in world space
+    glm::vec3 rayDirection = calculateMouseRay(mouseX, mouseY, viewMatrix, projectionMatrix, screenWidth, screenHeight);
+
+    // The fixed depth of the button plane
+    float buttonPlaneZ = -0.501f;
+    
+    for (int i = 0; i < 13; ++i) {
+        Button button = buttons[i];
+
+        if (isPowerOn && buttons[i].value != 13 && buttons[i].value != 12 && buttons[i].value != 11) {
+            continue;
+        }
+        // Find where the ray intersects the button plane (z = -0.501)
+        if (glm::abs(rayDirection.z) > 1e-6f) { // Avoid divide-by-zero for rays parallel to the plane
+            float t = (buttonPlaneZ - rayOrigin.z) / rayDirection.z; // Intersection distance along the ray
+
+            if (t >= 0) { // Only consider intersections in front of the ray origin
+                glm::vec3 intersectionPoint = rayOrigin + t * rayDirection;
+
+                // Check if the intersection point lies within the button's 2D boundaries
+                if (intersectionPoint.x >= button.x &&
+                    intersectionPoint.x <= button.x + button.width &&
+                    intersectionPoint.y >= button.y &&
+                    intersectionPoint.y <= button.y + button.height) {
+                    std::cout << "Button " << buttons[i].value << " pressed!" << std::endl;
+                    if (buttons[i].value == 12) {
+                        if (clockTimerNumbers[0] == 0 && clockTimerNumbers[1] == 0 &&
+                            clockTimerNumbers[2] == 0 && clockTimerNumbers[3] == 0) {
+                            break;
+                        }
+                        if (isPowerOn || isOpened) { break; }
+                        // Prevent starting if digit at index 2 is greater than 5
+                        if (!isPowerOn && clockTimerNumbers[2] > 5) {
+                            std::cout << "Cannot start: digit at index 2 is greater than 5!" << std::endl;
+                            break;
+                        }
+
+                        // Toggle power state and start countdown if valid
+                        if (!isPowerOn) {
+                            isPowerOn = true;
+                            lastAngle = angle;          // Save the current angle
+                            lastTime = glfwGetTime();   // Reset lastTime to avoid a large deltaTime
+                            std::thread countdownThread(countdown);
+                            countdownThread.detach();
+                        }
+
+                    }
+                    else if (buttons[i].value == 11) {
+                        isPowerOn = false;
+                        lastTime = glfwGetTime();
+
+                    }
+                    else if (buttons[i].value == 13) {
+                        isPowerOn = false;
+                        lastTime = glfwGetTime();
+                        clockTimerNumbers[0] = 0;
+                        clockTimerNumbers[1] = 0;
+                        clockTimerNumbers[2] = 0;
+                        clockTimerNumbers[3] = 0;
+                    }
+                    else {
+                        // Shift digits to the left and add the pressed button value
+                        for (int j = 0; j < 3; ++j) {
+                            clockTimerNumbers[j] = clockTimerNumbers[j + 1];
+                        }
+                        clockTimerNumbers[3] = buttons[i].value;
+                        std::cout << "Button " << buttons[i].value << " pressed!" << std::endl;
+                    }
+                    break;
+                }
+            }
+        }
+    }
+}
 
 int main(void)
 {
@@ -252,7 +437,9 @@ int main(void)
 
     unsigned int unifiedShader = createShader("basic.vert", "basic.frag");
     unsigned int doorShader = createShader("door.vert", "door.frag");
-    unsigned int shaders[] = { unifiedShader, doorShader };
+    unsigned int buttonShader = createShader("button.vert", "button.frag");
+
+    unsigned int shaders[] = { unifiedShader, doorShader, buttonShader };
     // Get the shader count (in this case, 2 shaders)
     size_t shaderCount = sizeof(shaders) / sizeof(shaders[0]);
     float microwaveVertices[] = {
@@ -339,6 +526,50 @@ int main(void)
         0.0f, -0.4f,  -0.501f,    0.0f, 0.0f, -1.0f,
         
     };
+    glm::vec3 hingePosition(0.9f, 0.0f, -0.501f);
+
+    float buttonVertices[13 * 16]; // 13 buttons, 16 values (4 * 4 vertices per button)
+
+    // Loop to define the button positions
+    for (int i = 0; i < 13; ++i) {
+        Button& btn = buttons[i];
+        float x1 = btn.x;
+        float y1 = btn.y;
+        float x2 = btn.x + btn.width;
+        float y2 = btn.y + btn.height;
+
+        // Assign the button's vertex data (ordered correctly for a square outline)
+        buttonVertices[i * 16 + 0] = x1; buttonVertices[i * 16 + 1] = y1; buttonVertices[i * 16 + 2] = 1; buttonVertices[i * 16 + 3] = 0; // Bottom-left
+        buttonVertices[i * 16 + 4] = x1; buttonVertices[i * 16 + 5] = y2; buttonVertices[i * 16 + 6] = 1; buttonVertices[i * 16 + 7] = 1; // Top-left
+        buttonVertices[i * 16 + 8] = x2; buttonVertices[i * 16 + 9] = y1; buttonVertices[i * 16 + 10] = 0; buttonVertices[i * 16 + 11] = 0; // Bottom-right
+        buttonVertices[i * 16 + 12] = x2; buttonVertices[i * 16 + 13] = y2; buttonVertices[i * 16 + 14] = 0; buttonVertices[i * 16 + 15] = 1; // Top-right
+    }
+
+    unsigned int buttonTextures[14]; // Array to store texture IDs for each button
+
+    for (int i = 0; i < 14; ++i) {
+        std::string texturePath = "res/button_texture_" + std::to_string(i + 1) + ".png";
+        if (i == 9) {
+            texturePath = "res/pause.png";
+        }
+        else if (i == 11) {
+            texturePath = "res/unactive_start.png";
+        }
+        else if (i == 13) {
+            texturePath = "res/active_start.png";
+        }
+        else if (i == 12) {
+            texturePath = "res/restart.png";
+        }
+        buttonTextures[i] = loadImageToTexture(texturePath.c_str()); // Function to load the texture
+        glBindTexture(GL_TEXTURE_2D, buttonTextures[i]); // Bind the texture
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+        glBindTexture(GL_TEXTURE_2D, 0); // Unbind the texture
+    }
+
 
     unsigned int stride = 6 * sizeof(float);
 
@@ -381,6 +612,21 @@ int main(void)
     // Unbind the VAO (optional)
     glBindVertexArray(0);
 
+    unsigned int buttonVAO, buttonVBO;
+    glGenVertexArrays(1, &buttonVAO);
+    glGenBuffers(1, &buttonVBO);
+
+    glBindVertexArray(buttonVAO);
+    glBindBuffer(GL_ARRAY_BUFFER, buttonVBO);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(buttonVertices), buttonVertices, GL_STATIC_DRAW);
+    glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)0);
+    glEnableVertexAttribArray(0);
+
+    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)(2 * sizeof(float)));
+    glEnableVertexAttribArray(1);
+
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
+    glBindVertexArray(0);
 
     // ++++++++++++++++++++++++++++++++++++++++++++++++++++++            UNIFORME            +++++++++++++++++++++++++++++++++++++++++++++++++
     glUseProgram(unifiedShader); //Slanje default vrijednosti uniformi
@@ -428,11 +674,13 @@ int main(void)
     glUniform3f(glGetUniformLocation(doorShader, "light.ambient"), 0.2f, 0.2f, 0.2f);
     glUniform3f(glGetUniformLocation(doorShader, "light.diffuse"), 0.5f, 0.5f, 0.5f);
     glUniform3f(glGetUniformLocation(doorShader, "light.specular"), 1.0f, 1.0f, 1.0f);
-    glUseProgram(doorShader);
+    glUseProgram(0);
+    changeProjection(shaders, shaderCount, projectionO);
+
 
     glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
     glCullFace(GL_BACK);//Biranje lica koje ce se eliminisati (tek nakon sto ukljucimo Face Culling)
-                glEnable(GL_DEPTH_TEST); //Ukljucivanje testiranja Z bafera
+    glEnable(GL_DEPTH_TEST); //Ukljucivanje testiranja Z bafera
 
     float deltaTime = 0.0f;	// Time between current frame and last frame
     float lastFrame = 0.0f; // Time of last frame
@@ -485,16 +733,61 @@ int main(void)
         {
             isTrasparentWindow = false;
         }
+        if (glfwGetKey(window, GLFW_KEY_C) == GLFW_PRESS) { 
+            isOpening = true;
+            isClosing = false;
+        }   
+
+        if (glfwGetKey(window, GLFW_KEY_Z) == GLFW_PRESS) {
+            isClosing = true;
+            isOpening = false;
+        }
+        if (glfwGetKey(window, GLFW_KEY_L) == GLFW_PRESS) {
+            isCameraLocked = true;
+            glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+        }
+        if (glfwGetKey(window, GLFW_KEY_U) == GLFW_PRESS) {
+            isCameraLocked = false;
+            glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+            int width, height;
+            glfwGetWindowSize(window, &width, &height);
+            glfwSetCursorPos(window, width / 2.0, height / 2.0);
+
+            // Update lastX and lastY to prevent twitching
+            lastX = width / 2.0;
+            lastY = height / 2.0;
+        }
+        double mouseX, mouseY;
+        glfwGetCursorPos(window, &mouseX, &mouseY);
+        if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS) {
+            if (!isMousePressed && isCameraLocked) {
+                // Mouse button is newly pressed
+                isMousePressed = true;
+
+                int screenWidth, screenHeight;
+                glfwGetWindowSize(window, &screenWidth, &screenHeight);
+
+                checkButtonPressWithRay(mouseX, mouseY, view, projectionP, screenWidth, screenHeight);
+            }
+        }
+        else {
+            // Reset the press state when the button is released
+            isMousePressed = false;
+        }
+
         //Transformisanje trouglova
         float cameraSpeed = 2.5f * deltaTime;
-        if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
-            cameraPos += cameraSpeed * cameraFront;
-        if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
-            cameraPos -= cameraSpeed * cameraFront;
-        if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
-            cameraPos -= glm::normalize(glm::cross(cameraFront, cameraUp)) * cameraSpeed;
-        if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
-            cameraPos += glm::normalize(glm::cross(cameraFront, cameraUp)) * cameraSpeed;
+        if (!isCameraLocked) {
+            if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
+                cameraPos += cameraSpeed * cameraFront;
+            if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
+                cameraPos -= cameraSpeed * cameraFront;
+            if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
+                cameraPos -= glm::normalize(glm::cross(cameraFront, cameraUp)) * cameraSpeed;
+            if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
+                cameraPos += glm::normalize(glm::cross(cameraFront, cameraUp)) * cameraSpeed;
+        }
+        
         glUseProgram(unifiedShader); //Slanje default vrijednosti uniformi
         view = glm::lookAt(cameraPos, cameraPos + cameraFront, cameraUp);
         model = glm::mat4(1.0f);
@@ -502,16 +795,43 @@ int main(void)
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); //Osvjezavamo i Z bafer i bafer boje
 
         drawCube(unifiedShader,VAO, model);
+
+        if (isOpening && doorAngle > -maxDoorAngle) {
+            doorAngle -= doorSpeed * deltaTime; // Decrement angle to open to the left
+            if (doorAngle <= -maxDoorAngle) {
+                doorAngle = -maxDoorAngle; // Clamp to -90 degrees
+                isOpening = false;        // Stop the opening animation
+            }
+        }
+        if (isClosing && doorAngle < 0.0f) {
+            doorAngle += doorSpeed * deltaTime; // Increment angle to close the door
+            if (doorAngle >= 0.0f) {
+                doorAngle = 0.0f;     // Clamp to 0 degrees (fully closed)
+                isClosing = false;    // Stop the closing animation
+            }
+        }
+        glm::mat4 doorModel = glm::mat4(1.0f);
+        // Move the hinge to the origin
+        doorModel = glm::translate(doorModel, hingePosition);
+        // Apply rotation around the Y-axis
+        doorModel = glm::rotate(doorModel, doorAngle, glm::vec3(0.0f, 1.0f, 0.0f));
+        // Move the hinge back to its original position
+        doorModel = glm::translate(doorModel, -hingePosition);
+
         if (isTrasparentWindow) {
             glEnable(GL_BLEND);
             glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-            drawDoor(doorShader, doorVAO, model);
+            drawDoor(doorShader, doorVAO, doorModel);
             glDisable(GL_BLEND);
         }
         else {
             glDisable(GL_BLEND);
-            drawDoor(doorShader, doorVAO, model);
+            drawDoor(doorShader, doorVAO, doorModel);
         }
+
+        renderButtons(buttonShader, buttonVAO, buttonTextures, model);
+        
+
         glfwSwapBuffers(window);
         glfwPollEvents();
     }
