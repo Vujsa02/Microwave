@@ -4,24 +4,44 @@ D:\Faks\VII Semestar\Grafika\3D\Microwave\Microwave3D\Microwave3D\Microwave3D.cp
 D:\Faks\VII Semestar\Grafika\3D\Microwave\Microwave3D\Microwave3D\Microwave3D.cpp(128,23): warning C4305: 'initializing': truncation from 'double' to 'float'
 D:\Faks\VII Semestar\Grafika\3D\Microwave\Microwave3D\Microwave3D\Microwave3D.cpp(129,23): warning C4305: 'initializing': truncation from 'double' to 'float'
 D:\Faks\VII Semestar\Grafika\3D\Microwave\Microwave3D\Microwave3D\Microwave3D.cpp(130,23): warning C4305: 'initializing': truncation from 'double' to 'float'
-D:\Faks\VII Semestar\Grafika\3D\Microwave\Microwave3D\Microwave3D\Microwave3D.cpp(146,17): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
 D:\Faks\VII Semestar\Grafika\3D\Microwave\Microwave3D\Microwave3D\Microwave3D.cpp(147,17): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
-D:\Faks\VII Semestar\Grafika\3D\Microwave\Microwave3D\Microwave3D\Microwave3D.cpp(151,19): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
+D:\Faks\VII Semestar\Grafika\3D\Microwave\Microwave3D\Microwave3D\Microwave3D.cpp(148,17): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
 D:\Faks\VII Semestar\Grafika\3D\Microwave\Microwave3D\Microwave3D\Microwave3D.cpp(152,19): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
-D:\Faks\VII Semestar\Grafika\3D\Microwave\Microwave3D\Microwave3D\Microwave3D.cpp(153,13): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
+D:\Faks\VII Semestar\Grafika\3D\Microwave\Microwave3D\Microwave3D\Microwave3D.cpp(153,19): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
 D:\Faks\VII Semestar\Grafika\3D\Microwave\Microwave3D\Microwave3D\Microwave3D.cpp(154,13): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
-D:\Faks\VII Semestar\Grafika\3D\Microwave\Microwave3D\Microwave3D\Microwave3D.cpp(283,35): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
-D:\Faks\VII Semestar\Grafika\3D\Microwave\Microwave3D\Microwave3D\Microwave3D.cpp(355,51): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
-D:\Faks\VII Semestar\Grafika\3D\Microwave\Microwave3D\Microwave3D\Microwave3D.cpp(363,47): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
-D:\Faks\VII Semestar\Grafika\3D\Microwave\Microwave3D\Microwave3D\Microwave3D.cpp(368,47): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
-D:\Faks\VII Semestar\Grafika\3D\Microwave\Microwave3D\Microwave3D\Microwave3D.cpp(419,13): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
-D:\Faks\VII Semestar\Grafika\3D\Microwave\Microwave3D\Microwave3D\Microwave3D.cpp(420,13): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
-D:\Faks\VII Semestar\Grafika\3D\Microwave\Microwave3D\Microwave3D\Microwave3D.cpp(522,10): warning C4305: 'initializing': truncation from 'double' to 'float'
-D:\Faks\VII Semestar\Grafika\3D\Microwave\Microwave3D\Microwave3D\Microwave3D.cpp(523,10): warning C4305: 'initializing': truncation from 'double' to 'float'
-D:\Faks\VII Semestar\Grafika\3D\Microwave\Microwave3D\Microwave3D\Microwave3D.cpp(524,10): warning C4305: 'initializing': truncation from 'double' to 'float'
-D:\Faks\VII Semestar\Grafika\3D\Microwave\Microwave3D\Microwave3D\Microwave3D.cpp(690,28): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
-D:\Faks\VII Semestar\Grafika\3D\Microwave\Microwave3D\Microwave3D\Microwave3D.cpp(757,27): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
-D:\Faks\VII Semestar\Grafika\3D\Microwave\Microwave3D\Microwave3D\Microwave3D.cpp(758,28): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
-D:\Faks\VII Semestar\Grafika\3D\Microwave\Microwave3D\Microwave3D\Microwave3D.cpp(770,49): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
-D:\Faks\VII Semestar\Grafika\3D\Microwave\Microwave3D\Microwave3D\Microwave3D.cpp(770,41): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+D:\Faks\VII Semestar\Grafika\3D\Microwave\Microwave3D\Microwave3D\Microwave3D.cpp(155,13): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
+D:\Faks\VII Semestar\Grafika\3D\Microwave\Microwave3D\Microwave3D\Microwave3D.cpp(304,35): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
+D:\Faks\VII Semestar\Grafika\3D\Microwave\Microwave3D\Microwave3D\Microwave3D.cpp(368,35): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
+D:\Faks\VII Semestar\Grafika\3D\Microwave\Microwave3D\Microwave3D\Microwave3D.cpp(376,31): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
+D:\Faks\VII Semestar\Grafika\3D\Microwave\Microwave3D\Microwave3D\Microwave3D.cpp(380,31): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
+D:\Faks\VII Semestar\Grafika\3D\Microwave\Microwave3D\Microwave3D\Microwave3D.cpp(473,13): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
+D:\Faks\VII Semestar\Grafika\3D\Microwave\Microwave3D\Microwave3D\Microwave3D.cpp(474,13): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
+D:\Faks\VII Semestar\Grafika\3D\Microwave\Microwave3D\Microwave3D\Microwave3D.cpp(578,10): warning C4305: 'initializing': truncation from 'double' to 'float'
+D:\Faks\VII Semestar\Grafika\3D\Microwave\Microwave3D\Microwave3D\Microwave3D.cpp(579,10): warning C4305: 'initializing': truncation from 'double' to 'float'
+D:\Faks\VII Semestar\Grafika\3D\Microwave\Microwave3D\Microwave3D\Microwave3D.cpp(580,10): warning C4305: 'initializing': truncation from 'double' to 'float'
+D:\Faks\VII Semestar\Grafika\3D\Microwave\Microwave3D\Microwave3D\Microwave3D.cpp(589,9): warning C4305: 'initializing': truncation from 'double' to 'float'
+D:\Faks\VII Semestar\Grafika\3D\Microwave\Microwave3D\Microwave3D\Microwave3D.cpp(589,16): warning C4305: 'initializing': truncation from 'double' to 'float'
+D:\Faks\VII Semestar\Grafika\3D\Microwave\Microwave3D\Microwave3D\Microwave3D.cpp(589,22): warning C4305: 'initializing': truncation from 'double' to 'float'
+D:\Faks\VII Semestar\Grafika\3D\Microwave\Microwave3D\Microwave3D\Microwave3D.cpp(590,9): warning C4305: 'initializing': truncation from 'double' to 'float'
+D:\Faks\VII Semestar\Grafika\3D\Microwave\Microwave3D\Microwave3D\Microwave3D.cpp(590,16): warning C4305: 'initializing': truncation from 'double' to 'float'
+D:\Faks\VII Semestar\Grafika\3D\Microwave\Microwave3D\Microwave3D\Microwave3D.cpp(590,22): warning C4305: 'initializing': truncation from 'double' to 'float'
+D:\Faks\VII Semestar\Grafika\3D\Microwave\Microwave3D\Microwave3D\Microwave3D.cpp(591,9): warning C4305: 'initializing': truncation from 'double' to 'float'
+D:\Faks\VII Semestar\Grafika\3D\Microwave\Microwave3D\Microwave3D\Microwave3D.cpp(591,16): warning C4305: 'initializing': truncation from 'double' to 'float'
+D:\Faks\VII Semestar\Grafika\3D\Microwave\Microwave3D\Microwave3D\Microwave3D.cpp(591,22): warning C4305: 'initializing': truncation from 'double' to 'float'
+D:\Faks\VII Semestar\Grafika\3D\Microwave\Microwave3D\Microwave3D\Microwave3D.cpp(592,9): warning C4305: 'initializing': truncation from 'double' to 'float'
+D:\Faks\VII Semestar\Grafika\3D\Microwave\Microwave3D\Microwave3D\Microwave3D.cpp(592,16): warning C4305: 'initializing': truncation from 'double' to 'float'
+D:\Faks\VII Semestar\Grafika\3D\Microwave\Microwave3D\Microwave3D\Microwave3D.cpp(592,22): warning C4305: 'initializing': truncation from 'double' to 'float'
+D:\Faks\VII Semestar\Grafika\3D\Microwave\Microwave3D\Microwave3D\Microwave3D.cpp(595,9): warning C4305: 'initializing': truncation from 'double' to 'float'
+D:\Faks\VII Semestar\Grafika\3D\Microwave\Microwave3D\Microwave3D\Microwave3D.cpp(595,17): warning C4305: 'initializing': truncation from 'double' to 'float'
+D:\Faks\VII Semestar\Grafika\3D\Microwave\Microwave3D\Microwave3D\Microwave3D.cpp(595,23): warning C4305: 'initializing': truncation from 'double' to 'float'
+D:\Faks\VII Semestar\Grafika\3D\Microwave\Microwave3D\Microwave3D\Microwave3D.cpp(596,9): warning C4305: 'initializing': truncation from 'double' to 'float'
+D:\Faks\VII Semestar\Grafika\3D\Microwave\Microwave3D\Microwave3D\Microwave3D.cpp(596,17): warning C4305: 'initializing': truncation from 'double' to 'float'
+D:\Faks\VII Semestar\Grafika\3D\Microwave\Microwave3D\Microwave3D\Microwave3D.cpp(596,23): warning C4305: 'initializing': truncation from 'double' to 'float'
+D:\Faks\VII Semestar\Grafika\3D\Microwave\Microwave3D\Microwave3D\Microwave3D.cpp(814,28): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
+D:\Faks\VII Semestar\Grafika\3D\Microwave\Microwave3D\Microwave3D\Microwave3D.cpp(883,27): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
+D:\Faks\VII Semestar\Grafika\3D\Microwave\Microwave3D\Microwave3D\Microwave3D.cpp(884,28): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
+D:\Faks\VII Semestar\Grafika\3D\Microwave\Microwave3D\Microwave3D\Microwave3D.cpp(917,53): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+D:\Faks\VII Semestar\Grafika\3D\Microwave\Microwave3D\Microwave3D\Microwave3D.cpp(917,45): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+D:\Faks\VII Semestar\Grafika\3D\Microwave\Microwave3D\Microwave3D\Microwave3D.cpp(920,53): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+D:\Faks\VII Semestar\Grafika\3D\Microwave\Microwave3D\Microwave3D\Microwave3D.cpp(920,45): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
   Microwave3D.vcxproj -> D:\Faks\VII Semestar\Grafika\3D\Microwave\Microwave3D\x64\Debug\Microwave3D.exe

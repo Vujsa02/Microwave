@@ -44,10 +44,10 @@
     <None Include="food.vert">
       <Filter>Source Files\Shader</Filter>
     </None>
-    <None Include="glass.frag">
+    <None Include="timer.frag">
       <Filter>Source Files\Shader</Filter>
     </None>
-    <None Include="glass.vert">
+    <None Include="timer.vert">
       <Filter>Source Files\Shader</Filter>
     </None>
     <None Include="light.frag">

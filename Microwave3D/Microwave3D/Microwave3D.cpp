@@ -91,10 +91,10 @@ struct DigitalNumber {
 };
 
 DigitalNumber digitalNumbers[4] = {
-    { 0.44f, 0.22f, 0.05f, 0.16f },
-    { 0.49f, 0.22f, 0.05f, 0.16f },
-    { 0.56f, 0.22f, 0.05f, 0.16f },
-    { 0.61f, 0.22f, 0.05f, 0.16f }
+    { -0.18f, 0.22f, 0.05f, 0.16f },
+    { -0.23f, 0.22f, 0.05f, 0.16f },
+    { -0.31f, 0.22f, 0.05f, 0.16f },
+    { -0.36f, 0.22f, 0.05f, 0.16f }
 };
 
 int clockTimerNumbers[4] =
@@ -129,6 +129,7 @@ float microwaveGlassR = 173 / 255.0;
 float microwaveGlassG = 216 / 255.0;
 float microwaveGlassB = 230 / 255.0;
 
+bool isViewPerspective = false;
 bool isCameraLocked = false;
 bool isOpening = false;
 bool isClosing = false;
@@ -250,6 +251,26 @@ void renderButtons(unsigned int buttonShader, unsigned int buttonVAO, unsigned i
     glUseProgram(0);
 }
 
+void renderDigitalNumbers(unsigned int buttonShader, unsigned int digitalNumberVAO, unsigned int* digitalNumberTextures, glm::mat4 model) {
+    glUseProgram(buttonShader);
+    glBindVertexArray(digitalNumberVAO);
+
+    glUniformMatrix4fv(glGetUniformLocation(buttonShader, "uM"), 1, GL_FALSE, glm::value_ptr(model));
+
+    for (int i = 0; i < 4; ++i) {
+        // Bind the texture for the current button
+        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_2D, digitalNumberTextures[clockTimerNumbers[i]]);
+        glUniform1i(glGetUniformLocation(buttonShader, "uTex"), 0); // Set the uniform to use texture unit 0
+
+        // Draw the button
+        glDrawArrays(GL_TRIANGLE_STRIP, i * 4, 4);
+    }
+
+    glBindTexture(GL_TEXTURE_2D, 0); // Unbind texture
+    glBindVertexArray(0);
+    glUseProgram(0);
+}
 
 void countdown() {
     while (isPowerOn) {
@@ -292,30 +313,93 @@ void countdown() {
 }
 
 // Helper function to generate ray
-glm::vec3 calculateMouseRay(float mouseX, float mouseY, glm::mat4 viewMatrix, glm::mat4 projectionMatrix, int screenWidth, int screenHeight) {
+glm::vec3 calculateMouseRay(float mouseX, float mouseY, glm::mat4 viewMatrix, glm::mat4 projectionMatrix, int screenWidth, int screenHeight, glm::vec3& rayOrigin) {
     // Convert mouse position to NDC
     float ndcX = (2.0f * mouseX) / screenWidth - 1.0f;
     float ndcY = 1.0f - (2.0f * mouseY) / screenHeight; // Invert Y-axis
     glm::vec4 clipCoords = glm::vec4(ndcX, ndcY, -1.0f, 1.0f);
 
-    // Unproject clip coordinates to view space
-    glm::vec4 eyeCoords = glm::inverse(projectionMatrix) * clipCoords;
-    eyeCoords.z = -1.0f;
-    eyeCoords.w = 0.0f;
+    if (isViewPerspective) {
+        // Perspective projection: Ray origin is at the camera position
+        rayOrigin = cameraPos;
 
-    // Unproject to world space
-    glm::vec3 worldRay = glm::vec3(glm::inverse(viewMatrix) * eyeCoords);
-    return glm::normalize(worldRay);
+        // Unproject clip coordinates to view space
+        glm::vec4 eyeCoords = glm::inverse(projectionMatrix) * clipCoords;
+        eyeCoords.z = -1.0f; // Set depth
+        eyeCoords.w = 0.0f; // Directional vector
+
+        // Unproject to world space
+        glm::vec3 worldRay = glm::vec3(glm::inverse(viewMatrix) * eyeCoords);
+        return glm::normalize(worldRay);
+    }
+    else {
+        // Orthogonal projection: Ray origin is at the near plane point
+        glm::vec4 eyeCoords = glm::inverse(projectionMatrix) * clipCoords;
+        eyeCoords.z = -1.0f; // Near plane depth
+        eyeCoords.w = 1.0f; // Position vector
+
+        rayOrigin = glm::vec3(glm::inverse(viewMatrix) * eyeCoords);
+
+        // Direction is constant in orthogonal projection
+        glm::vec3 rayDirection = glm::normalize(glm::vec3(glm::inverse(viewMatrix) * glm::vec4(0.0f, 0.0f, -1.0f, 0.0f)));
+        return rayDirection;
+    }
+}
+
+
+void handleButtonPress(Button button) {
+    std::cout << "Button " << button.value << " pressed!" << std::endl;
+    if (button.value == 12) {
+        if (clockTimerNumbers[0] == 0 && clockTimerNumbers[1] == 0 &&
+            clockTimerNumbers[2] == 0 && clockTimerNumbers[3] == 0) {
+            return;
+        }
+        if (isPowerOn || isOpened) { return; }
+        // Prevent starting if digit at index 2 is greater than 5
+        if (!isPowerOn && clockTimerNumbers[2] > 5) {
+            std::cout << "Cannot start: digit at index 2 is greater than 5!" << std::endl;
+            return;
+        }
+
+        // Toggle power state and start countdown if valid
+        if (!isPowerOn) {
+            isPowerOn = true;
+            lastAngle = angle;          // Save the current angle
+            lastTime = glfwGetTime();   // Reset lastTime to avoid a large deltaTime
+            std::thread countdownThread(countdown);
+            countdownThread.detach();
+        }
+
+    }
+    else if (button.value == 11) {
+        isPowerOn = false;
+        lastTime = glfwGetTime();
+    }
+    else if (button.value == 13) {
+        isPowerOn = false;
+        lastTime = glfwGetTime();
+        clockTimerNumbers[0] = 0;
+        clockTimerNumbers[1] = 0;
+        clockTimerNumbers[2] = 0;
+        clockTimerNumbers[3] = 0;
+    }
+    else {
+        // Shift digits to the left and add the pressed button value
+        for (int j = 0; j < 3; ++j) {
+            clockTimerNumbers[j] = clockTimerNumbers[j + 1];
+        }
+        clockTimerNumbers[3] = button.value;
+    }
+    return;
 }
 
 // Function to test ray against buttons
 void checkButtonPressWithRay(float mouseX, float mouseY, glm::mat4 viewMatrix, glm::mat4 projectionMatrix, int screenWidth, int screenHeight) {
-    std::cout << "Called method" << std::endl;
     glm::vec3 rayOrigin = cameraPos; // Camera position in world space
-    glm::vec3 rayDirection = calculateMouseRay(mouseX, mouseY, viewMatrix, projectionMatrix, screenWidth, screenHeight);
+    glm::vec3 rayDirection = calculateMouseRay(mouseX, mouseY, viewMatrix, projectionMatrix, screenWidth, screenHeight, rayOrigin);
 
     // The fixed depth of the button plane
-    float buttonPlaneZ = -0.501f;
+    float buttonPlaneZ = -0.502f;
     
     for (int i = 0; i < 13; ++i) {
         Button button = buttons[i];
@@ -323,7 +407,7 @@ void checkButtonPressWithRay(float mouseX, float mouseY, glm::mat4 viewMatrix, g
         if (isPowerOn && buttons[i].value != 13 && buttons[i].value != 12 && buttons[i].value != 11) {
             continue;
         }
-        // Find where the ray intersects the button plane (z = -0.501)
+        // Find where the ray intersects the button plane (z = -0.502)
         if (glm::abs(rayDirection.z) > 1e-6f) { // Avoid divide-by-zero for rays parallel to the plane
             float t = (buttonPlaneZ - rayOrigin.z) / rayDirection.z; // Intersection distance along the ray
 
@@ -335,55 +419,25 @@ void checkButtonPressWithRay(float mouseX, float mouseY, glm::mat4 viewMatrix, g
                     intersectionPoint.x <= button.x + button.width &&
                     intersectionPoint.y >= button.y &&
                     intersectionPoint.y <= button.y + button.height) {
-                    std::cout << "Button " << buttons[i].value << " pressed!" << std::endl;
-                    if (buttons[i].value == 12) {
-                        if (clockTimerNumbers[0] == 0 && clockTimerNumbers[1] == 0 &&
-                            clockTimerNumbers[2] == 0 && clockTimerNumbers[3] == 0) {
-                            break;
-                        }
-                        if (isPowerOn || isOpened) { break; }
-                        // Prevent starting if digit at index 2 is greater than 5
-                        if (!isPowerOn && clockTimerNumbers[2] > 5) {
-                            std::cout << "Cannot start: digit at index 2 is greater than 5!" << std::endl;
-                            break;
-                        }
-
-                        // Toggle power state and start countdown if valid
-                        if (!isPowerOn) {
-                            isPowerOn = true;
-                            lastAngle = angle;          // Save the current angle
-                            lastTime = glfwGetTime();   // Reset lastTime to avoid a large deltaTime
-                            std::thread countdownThread(countdown);
-                            countdownThread.detach();
-                        }
-
-                    }
-                    else if (buttons[i].value == 11) {
-                        isPowerOn = false;
-                        lastTime = glfwGetTime();
-
-                    }
-                    else if (buttons[i].value == 13) {
-                        isPowerOn = false;
-                        lastTime = glfwGetTime();
-                        clockTimerNumbers[0] = 0;
-                        clockTimerNumbers[1] = 0;
-                        clockTimerNumbers[2] = 0;
-                        clockTimerNumbers[3] = 0;
-                    }
-                    else {
-                        // Shift digits to the left and add the pressed button value
-                        for (int j = 0; j < 3; ++j) {
-                            clockTimerNumbers[j] = clockTimerNumbers[j + 1];
-                        }
-                        clockTimerNumbers[3] = buttons[i].value;
-                        std::cout << "Button " << buttons[i].value << " pressed!" << std::endl;
-                    }
-                    break;
+                        handleButtonPress(buttons[i]);
                 }
             }
         }
     }
+}
+
+void renderTimer(unsigned int timerShader, unsigned int timerVAO, glm::mat4 model) {
+    glUseProgram(timerShader);
+    glBindVertexArray(timerVAO);
+    glUniformMatrix4fv(glGetUniformLocation(timerShader, "uM"), 1, GL_FALSE, glm::value_ptr(model));
+
+    glDrawArrays(GL_TRIANGLE_STRIP, 0, 4); //Black box
+
+    glPointSize(5);
+    glDrawArrays(GL_POINTS, 4, 2);
+
+    glUseProgram(0);
+    glBindVertexArray(0);
 }
 
 int main(void)
@@ -438,8 +492,10 @@ int main(void)
     unsigned int unifiedShader = createShader("basic.vert", "basic.frag");
     unsigned int doorShader = createShader("door.vert", "door.frag");
     unsigned int buttonShader = createShader("button.vert", "button.frag");
+    unsigned int timerShader = createShader("timer.vert", "timer.frag");
 
-    unsigned int shaders[] = { unifiedShader, doorShader, buttonShader };
+
+    unsigned int shaders[] = { unifiedShader, doorShader, buttonShader, timerShader };
     // Get the shader count (in this case, 2 shaders)
     size_t shaderCount = sizeof(shaders) / sizeof(shaders[0]);
     float microwaveVertices[] = {
@@ -518,15 +574,27 @@ int main(void)
     };
 
     float microwaveDoorVertices[] = {
-         0.0f, -0.4f,  -0.501f,    0.0f, 0.0f, -1.0f,
-         0.9, -0.4f,  -0.501f,    0.0f, 0.0f, -1.0f,
-         0.9,  0.4f,  -0.501f,    0.0f, 0.0f, -1.0f,
-         0.9,  0.4f,  -0.501f,    0.0f, 0.0f, -1.0f,
-        0.0f,  0.4f,  -0.501f,    0.0f, 0.0f, -1.0f,
-        0.0f, -0.4f,  -0.501f,    0.0f, 0.0f, -1.0f,
+         0.0f, -0.4f,  -0.502f,    0.0f, 0.0f, -1.0f,
+         0.9, -0.4f,  -0.502f,    0.0f, 0.0f, -1.0f,
+         0.9,  0.4f,  -0.502f,    0.0f, 0.0f, -1.0f,
+         0.9,  0.4f,  -0.502f,    0.0f, 0.0f, -1.0f,
+        0.0f,  0.4f,  -0.502f,    0.0f, 0.0f, -1.0f,
+        0.0f, -0.4f,  -0.502f,    0.0f, 0.0f, -1.0f,
         
     };
-    glm::vec3 hingePosition(0.9f, 0.0f, -0.501f);
+    glm::vec3 hingePosition(0.9f, 0.0f, -0.502f);
+
+    float microwaveTimerVertices[]{
+        // Black box
+        -0.12, 0.20, -0.501, 0, 0, 0,
+        -0.12, 0.40, -0.501, 0, 0, 0,
+        -0.37, 0.20, -0.501, 0, 0, 0,
+        -0.37, 0.40, -0.501, 0, 0, 0,
+
+        // Dots on timer
+        -0.245, 0.27, -0.503, 1, 0, 0,
+        -0.245, 0.32, -0.503, 1, 0, 0,
+    };
 
     float buttonVertices[13 * 16]; // 13 buttons, 16 values (4 * 4 vertices per button)
 
@@ -570,6 +638,34 @@ int main(void)
         glBindTexture(GL_TEXTURE_2D, 0); // Unbind the texture
     }
 
+    float digitalNumVertices[4 * 16]; // 4 nums, 4 values for 1 point, 4 points total = 16
+
+    // Loop to define the button positions
+    for (int i = 0; i < 4; ++i) {
+        DigitalNumber& num = digitalNumbers[i];
+        float x1 = num.x;
+        float y1 = num.y;
+        float x2 = num.x + num.width;
+        float y2 = num.y + num.height;
+
+        // Assign the button's vertex data (ordered correctly for a square outline)
+        digitalNumVertices[i * 16 + 0] = x1; digitalNumVertices[i * 16 + 1] = y1; digitalNumVertices[i * 16 + 2] = 1; digitalNumVertices[i * 16 + 3] = 0; // Bottom-left
+        digitalNumVertices[i * 16 + 4] = x1; digitalNumVertices[i * 16 + 5] = y2; digitalNumVertices[i * 16 + 6] = 1; digitalNumVertices[i * 16 + 7] = 1; // Top-left
+        digitalNumVertices[i * 16 + 8] = x2; digitalNumVertices[i * 16 + 9] = y1; digitalNumVertices[i * 16 + 10] = 0; digitalNumVertices[i * 16 + 11] = 0; // Bottom-right
+        digitalNumVertices[i * 16 + 12] = x2; digitalNumVertices[i * 16 + 13] = y2; digitalNumVertices[i * 16 + 14] = 0; digitalNumVertices[i * 16 + 15] = 1; // Top-right
+    }
+
+    unsigned int digitalNumberTextures[10];
+    for (int i = 0; i < 10; ++i) {
+        std::string texturePath = "res/digital_number_" + std::to_string(i) + ".jpg";
+        digitalNumberTextures[i] = loadImageToTexture(texturePath.c_str()); // Function to load the texture
+        glBindTexture(GL_TEXTURE_2D, digitalNumberTextures[i]); // Bind the texture
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+        glBindTexture(GL_TEXTURE_2D, 0); // Unbind the texture
+    }
 
     unsigned int stride = 6 * sizeof(float);
 
@@ -623,6 +719,34 @@ int main(void)
     glEnableVertexAttribArray(0);
 
     glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)(2 * sizeof(float)));
+    glEnableVertexAttribArray(1);
+
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
+    glBindVertexArray(0);
+
+    unsigned int digitalNumberVAO, digitalNumberVBO;
+    glGenVertexArrays(1, &digitalNumberVAO);
+    glGenBuffers(1, &digitalNumberVBO);
+
+    glBindVertexArray(digitalNumberVAO);
+    glBindBuffer(GL_ARRAY_BUFFER, digitalNumberVBO);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(digitalNumVertices), digitalNumVertices, GL_STATIC_DRAW);
+    glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)0);
+    glEnableVertexAttribArray(0);
+
+    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)(2 * sizeof(float)));
+    glEnableVertexAttribArray(1);
+
+    unsigned int timerVAO, timerVBO;
+    glGenVertexArrays(1, &timerVAO);
+    glGenBuffers(1, &timerVBO);
+
+    glBindVertexArray(timerVAO);
+    glBindBuffer(GL_ARRAY_BUFFER, timerVBO);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(microwaveTimerVertices), microwaveTimerVertices, GL_STATIC_DRAW);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)0);
+    glEnableVertexAttribArray(0);
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)(3 * sizeof(float)));
     glEnableVertexAttribArray(1);
 
     glBindBuffer(GL_ARRAY_BUFFER, 0);
@@ -720,10 +844,12 @@ int main(void)
         if (glfwGetKey(window, GLFW_KEY_P) == GLFW_PRESS)
         {
             changeProjection(shaders, shaderCount, projectionP);
+            isViewPerspective = true;
         }
         if (glfwGetKey(window, GLFW_KEY_O) == GLFW_PRESS)
         {
             changeProjection(shaders, shaderCount, projectionO);
+            isViewPerspective = false;
         }
         if (glfwGetKey(window, GLFW_KEY_T) == GLFW_PRESS)
         {
@@ -757,23 +883,7 @@ int main(void)
             lastX = width / 2.0;
             lastY = height / 2.0;
         }
-        double mouseX, mouseY;
-        glfwGetCursorPos(window, &mouseX, &mouseY);
-        if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS) {
-            if (!isMousePressed && isCameraLocked) {
-                // Mouse button is newly pressed
-                isMousePressed = true;
-
-                int screenWidth, screenHeight;
-                glfwGetWindowSize(window, &screenWidth, &screenHeight);
-
-                checkButtonPressWithRay(mouseX, mouseY, view, projectionP, screenWidth, screenHeight);
-            }
-        }
-        else {
-            // Reset the press state when the button is released
-            isMousePressed = false;
-        }
+       
 
         //Transformisanje trouglova
         float cameraSpeed = 2.5f * deltaTime;
@@ -792,6 +902,30 @@ int main(void)
         view = glm::lookAt(cameraPos, cameraPos + cameraFront, cameraUp);
         model = glm::mat4(1.0f);
         updateView(shaders, shaderCount, cameraPos, view);
+
+        double mouseX, mouseY;
+        glfwGetCursorPos(window, &mouseX, &mouseY);
+        if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS) {
+            if (!isMousePressed && isCameraLocked) {
+                // Mouse button is newly pressed
+                isMousePressed = true;
+
+                int screenWidth, screenHeight;
+                glfwGetWindowSize(window, &screenWidth, &screenHeight);
+
+                if (isViewPerspective) {
+                    checkButtonPressWithRay(mouseX, mouseY, view, projectionP, screenWidth, screenHeight);
+                }
+                else {
+                    checkButtonPressWithRay(mouseX, mouseY, view, projectionO, screenWidth, screenHeight);
+                }
+            }
+        }
+        else {
+            // Reset the press state when the button is released
+            isMousePressed = false;
+        }
+
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); //Osvjezavamo i Z bafer i bafer boje
 
         drawCube(unifiedShader,VAO, model);
@@ -831,6 +965,9 @@ int main(void)
 
         renderButtons(buttonShader, buttonVAO, buttonTextures, model);
         
+        renderDigitalNumbers(buttonShader, digitalNumberVAO, digitalNumberTextures, model);
+
+        renderTimer(timerShader, timerVAO, model);
 
         glfwSwapBuffers(window);
         glfwPollEvents();
