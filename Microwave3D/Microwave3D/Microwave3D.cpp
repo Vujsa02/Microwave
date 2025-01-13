@@ -182,12 +182,24 @@ void scroll_callback(GLFWwindow* window, double xoffset, double yoffset)
         fov = 90.0f;
 }
 
-void drawCube(unsigned int shader, unsigned int VAO, glm::mat4 model) {
+void drawMicrowave(unsigned int shader, unsigned int VAO, glm::mat4 model, unsigned int frontTex, unsigned int backTex) {
+    glEnable(GL_CULL_FACE); // Enable face culling
     glUseProgram(shader); //Slanje default vrijednosti uniformi
     glBindVertexArray(VAO);
     glUniformMatrix4fv(glGetUniformLocation(shader, "uM"), 1, GL_FALSE, glm::value_ptr(model));
-
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D, frontTex);
+    glUniform1i(glGetUniformLocation(shader, "material.frontDiffuse"), 0);
+    glCullFace(GL_BACK);
     glDrawArrays(GL_TRIANGLES, 0, 54);
+
+    glActiveTexture(GL_TEXTURE1);
+    glBindTexture(GL_TEXTURE_2D, backTex);
+    glUniform1i(glGetUniformLocation(shader, "material.backDiffuse"), 1);
+    glCullFace(GL_FRONT);
+    glDrawArrays(GL_TRIANGLES, 0, 54);
+    glDisable(GL_CULL_FACE);
+    glUseProgram(0);
 }
 
 void drawDoor(unsigned int shader, unsigned int VAO, glm::mat4 model) {
@@ -499,78 +511,79 @@ int main(void)
     // Get the shader count (in this case, 2 shaders)
     size_t shaderCount = sizeof(shaders) / sizeof(shaders[0]);
     float microwaveVertices[] = {
-        // positions         // normal coords
+        // positions         // normal coords           //texture coords
        // Front face (with a hole)
         // RIGHT of the hole
-        -0.5f,  0.5f, -0.5f,  0.0f,  0.0f, -1.0f,
-        -0.5f,  -0.5f, -0.5f, 0.0f,  0.0f, -1.0f,
-        -0.0f,  -0.5f, -0.5f,  0.0f,  0.0f, -1.0f,
+        -0.5f,   0.5f, -0.5f,   0.0f, 0.0f, -1.0f,      0.0f, 1.0f,
+         0.0f,  0.5f, -0.5f,    0.0f, 0.0f, -1.0f,      1.0f, 1.0f,
+         0.0f, -0.5f, -0.5f,    0.0f, 0.0f, -1.0f,      1.0f, 0.0f,
+         0.0f,  -0.5f, -0.5f,   0.0f, 0.0f, -1.0f,      1.0f, 0.0f,
+        -0.5f,  -0.5f, -0.5f,   0.0f, 0.0f, -1.0f,      0.0f, 0.0f,
+        -0.5f,  0.5f, -0.5f,    0.0f, 0.0f, -1.0f,      0.0f, 1.0f,
 
-        -0.0f,  -0.5f, -0.5f,  0.0f,  0.0f, -1.0f,
-        -0.0f,  0.5f, -0.5f, 0.0f,  0.0f, -1.0f,
-        -0.5f,  0.5f, -0.5f,  0.0f,  0.0f, -1.0f,
-
-        // Top-right of the hole
-         1.0,  0.4f, -0.5f,  0.0f,  0.0f, -1.0f,
-         1.0,  0.5f, -0.5f,   0.0f,  0.0f, -1.0f,
-         -0.5f,  0.5f, -0.5f,  0.0f,  0.0f, -1.0f,
-
-         -0.5f,  0.5f, -0.5f,  0.0f,  0.0f, -1.0f,
-         -0.5f,  0.4f, -0.5f, 0.0f,  0.0f, -1.0f,
-         1.0,  0.4f, -0.5f,  0.0f,  0.0f, -1.0f,
+        // Top of the hole
+         0.9,  0.4f, -0.5f,      0.0f, 0.0f, -1.0f,     0.0f, 1.0f,
+        -0.0f, 0.4f, -0.5f,      0.0f, 0.0f, -1.0f,     1.0f, 1.0f,
+        -0.0f, 0.5f, -0.5f,      0.0f, 0.0f, -1.0f,     1.0f, 0.9f,
+        -0.0f, 0.5f, -0.5f,      0.0f, 0.0f, -1.0f,     1.0f, 0.9f,
+         0.9,  0.5f, -0.5f,      0.0f, 0.0f, -1.0f,     0.0f, 0.9f,
+         0.9,  0.4f, -0.5f,      0.0f, 0.0f, -1.0f,     0.0f, 1.0f,
 
          // Bottom of the hole
-         -0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f,
-         1.0, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f,
-         1.0, -0.4f, -0.5f,  0.0f,  0.0f, -1.0f,
-
-         1.0, -0.4f, -0.5f,  0.0f,  0.0f, -1.0f,
-         -0.5f, -0.4f, -0.5f,  0.0f,  0.0f, -1.0f,
-         -0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f,
+        -0.0f, -0.5f, -0.5f,     0.0f,  0.0f, -1.0f,     0.0f, 0.0f,
+        -0.0f, -0.4f, -0.5f,     0.0f,  0.0f, -1.0f,     0.0f, 0.1f,
+         0.9,  -0.4f, -0.5f,     0.0f,  0.0f, -1.0f,     1.0f, 0.1f,
+         0.9,  -0.4f, -0.5f,     0.0f,  0.0f, -1.0f,     1.0f, 0.1f,
+         0.9,  -0.5f, -0.5f,     0.0f,  0.0f, -1.0f,     1.0f, 0.0f,
+        -0.0f, -0.5f, -0.5f,     0.0f,  0.0f, -1.0f,     0.0f, 0.0f,
 
          // LEFT of the hole
-          1.0, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f,
-          1.0, 0.5f, -0.5f,   0.0f,  0.0f, -1.0f,
-          0.9f, 0.5f, -0.5f,  0.0f,  0.0f, -1.0f,
+         1.0, -0.5f, -0.5f,      0.0f,  0.0f, -1.0f,    0.0f, 0.0f,
+         0.9f, -0.5f, -0.5f,     0.0f,  0.0f, -1.0f,    0.1f, 0.0f,
+         0.9f,  0.5f, -0.5f,     0.0f,  0.0f, -1.0f,    0.1f, 1.0f,
+         0.9f, 0.5f, -0.5f,      0.0f,  0.0f, -1.0f,    0.1f, 1.0f,
+         1.0,  0.5f, -0.5f,      0.0f,  0.0f, -1.0f,    0.0f, 1.0f,
+         1.0,  -0.5f, -0.5f,     0.0f,  0.0f, -1.0f,    0.0f, 0.0f,
 
-          0.9f, 0.5f, -0.5f,   0.0f,  0.0f, -1.0f,
-          0.9f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f,
-          1.0, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f,
+         //Back of the microwave with reversed normal
+        -0.5f, -0.5f,  0.5f,     0.0f, 0.0f, -1.0f,     0.0f, 0.0f,
+         1.0,  -0.5f,  0.5f,     0.0f, 0.0f, -1.0f,     1.0f, 0.0f,
+         1.0,   0.5f,  0.5f,     0.0f, 0.0f, -1.0f,     1.0f, 1.0f,
+         1.0,   0.5f,  0.5f,     0.0f, 0.0f, -1.0f,     1.0f, 1.0f,
+        -0.5f,  0.5f,  0.5f,     0.0f, 0.0f, -1.0f,     0.0f, 1.0f,
+        -0.5f, -0.5f,  0.5f,     0.0f, 0.0f, -1.0f,     0.0f, 0.0f,
 
-        -0.5f, -0.5f,  0.5f,    0.0f, 0.0f, -1.0f,
-         1.0, -0.5f,  0.5f,    0.0f, 0.0f, -1.0f,
-         1.0,  0.5f,  0.5f,    0.0f, 0.0f, -1.0f,
-         1.0,  0.5f,  0.5f,    0.0f, 0.0f, -1.0f,
-        -0.5f,  0.5f,  0.5f,    0.0f, 0.0f, -1.0f,
-        -0.5f, -0.5f,  0.5f,    0.0f, 0.0f, -1.0f,
+        //Right side of microwave 
+        -0.5f,  0.5f,  0.5f,     1.0f, 0.0f, 0.0f,      0.0f, 1.0f,
+        -0.5f,  0.5f, -0.5f,     1.0f, 0.0f, 0.0f,      1.0f, 1.0f,
+        -0.5f, -0.5f, -0.5f,     1.0f, 0.0f, 0.0f,      1.0f, 0.0f,
+        -0.5f, -0.5f, -0.5f,     1.0f, 0.0f, 0.0f,      1.0f, 0.0f,
+        -0.5f, -0.5f,  0.5f,     1.0f, 0.0f, 0.0f,      0.0f, 0.0f,
+        -0.5f,  0.5f,  0.5f,     1.0f, 0.0f, 0.0f,      0.0f, 1.0f,
 
-        -0.5f,  0.5f,  0.5f,  1.0f, 0.0f, 0.0f,
-        -0.5f,  0.5f, -0.5f,  1.0f, 0.0f, 0.0f,
-        -0.5f, -0.5f, -0.5f,  1.0f, 0.0f, 0.0f,
-        -0.5f, -0.5f, -0.5f,  1.0f, 0.0f, 0.0f,
-        -0.5f, -0.5f,  0.5f,  1.0f, 0.0f, 0.0f,
-        -0.5f,  0.5f,  0.5f,  1.0f, 0.0f, 0.0f,
+        //Left side of the microwave
+         1.0,  0.5f,  0.5f,     1.0f, 0.0f, 0.0f,       1.0f, 1.0f,
+         1.0, -0.5f,  0.5f,     1.0f, 0.0f, 0.0f,       1.0f, 0.0f,
+         1.0, -0.5f, -0.5f,     1.0f, 0.0f, 0.0f,       0.0f, 0.0f,
+         1.0, -0.5f, -0.5f,     1.0f, 0.0f, 0.0f,       0.0f, 0.0f,
+         1.0,  0.5f, -0.5f,     1.0f, 0.0f, 0.0f,       0.0f, 1.0f,
+         1.0,  0.5f,  0.5f,     1.0f, 0.0f, 0.0f,       1.0f, 1.0f,
 
-         1.0,  0.5f,  0.5f,  1.0f, 0.0f, 0.0f,
-         1.0,  0.5f, -0.5f,  1.0f, 0.0f, 0.0f,
-         1.0, -0.5f, -0.5f,  1.0f, 0.0f, 0.0f,
-         1.0, -0.5f, -0.5f,  1.0f, 0.0f, 0.0f,
-         1.0, -0.5f,  0.5f,  1.0f, 0.0f, 0.0f,
-         1.0,  0.5f,  0.5f,  1.0f, 0.0f, 0.0f,
+         //Bottom side of microwave
+        -0.5f, -0.5f, -0.5f,    0.0f, 1.0f, 0.0f,       0.0f, 1.0f,
+         1.0,  -0.5f, -0.5f,    0.0f, 1.0f, 0.0f,       1.0f, 1.0f,
+         1.0,  -0.5f,  0.5f,    0.0f, 1.0f, 0.0f,       1.0f, 0.0f,
+         1.0,  -0.5f,  0.5f,    0.0f, 1.0f, 0.0f,       1.0f, 0.0f,
+        -0.5f, -0.5f,  0.5f,    0.0f, 1.0f, 0.0f,       0.0f, 0.0f,
+        -0.5f, -0.5f, -0.5f,    0.0f, 1.0f, 0.0f,       0.0f, 1.0f,
 
-        -0.5f, -0.5f, -0.5f,    0.0f, 1.0f, 0.0f,
-         1.0, -0.5f, -0.5f,    0.0f, 1.0f, 0.0f,
-         1.0, -0.5f,  0.5f,    0.0f, 1.0f, 0.0f,
-         1.0, -0.5f,  0.5f,    0.0f, 1.0f, 0.0f,
-        -0.5f, -0.5f,  0.5f,    0.0f, 1.0f, 0.0f,
-        -0.5f, -0.5f, -0.5f,    0.0f, 1.0f, 0.0f,
-
-        -0.5f,  0.5f, -0.5f,  0.0f, 1.0f, 0.0f,
-         1.0,  0.5f, -0.5f,  0.0f, 1.0f, 0.0f,
-         1.0,  0.5f,  0.5f,  0.0f, 1.0f, 0.0f,
-         1.0,  0.5f,  0.5f,  0.0f, 1.0f, 0.0f,
-        -0.5f,  0.5f,  0.5f,  0.0f, 1.0f, 0.0f,
-        -0.5f,  0.5f, -0.5f,  0.0f, 1.0f, 0.0f,
+        //Top side of microwave
+        -0.5f, 0.5f, -0.5f,  0.0f, 1.0f, 0.0f,          0.0f, 1.0f,
+        -0.5f, 0.5f,  0.5f,  0.0f, 1.0f, 0.0f,          1.0f, 1.0f,
+         1.0,  0.5f,  0.5f,  0.0f, 1.0f, 0.0f,          1.0f, 0.0f,
+         1.0,  0.5f,  0.5f,  0.0f, 1.0f, 0.0f,          1.0f, 0.0f,
+         1.0,  0.5f, -0.5f,  0.0f, 1.0f, 0.0f,          0.0f, 0.0f,
+        -0.5f, 0.5f, -0.5f,  0.0f, 1.0f, 0.0f,          0.0f, 1.0f
     };
 
     float microwaveDoorVertices[] = {
@@ -667,8 +680,28 @@ int main(void)
         glBindTexture(GL_TEXTURE_2D, 0); // Unbind the texture
     }
 
-    unsigned int stride = 6 * sizeof(float);
+    unsigned int microwaveFrontTex;
+    std::string microwaveFrontPath = "res/microwaveFront.png";
+    microwaveFrontTex = loadImageToTexture(microwaveFrontPath.c_str()); // Function to load the texture
+    glBindTexture(GL_TEXTURE_2D, microwaveFrontTex); // Bind the texture
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    glBindTexture(GL_TEXTURE_2D, 0);
 
+    unsigned int microwaveBackTex;
+    std::string microwaveBackPath = "res/microwaveBack.jpg";
+    microwaveBackTex = loadImageToTexture(microwaveBackPath.c_str()); // Function to load the texture
+    glBindTexture(GL_TEXTURE_2D, microwaveBackTex); // Bind the texture
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    glBindTexture(GL_TEXTURE_2D, 0);
+
+    unsigned int microwaveStride = 8 * sizeof(float);
+    unsigned int doorStride = 6 * sizeof(float);
     unsigned int VAO, VBO, doorVAO, doorVBO;
 
     // Generate and bind the Vertex Array Object
@@ -681,11 +714,14 @@ int main(void)
     glBufferData(GL_ARRAY_BUFFER, sizeof(microwaveVertices), microwaveVertices, GL_STATIC_DRAW);
 
     // Define the vertex attribute for position (location = 0)
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, stride, (void*)0);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, microwaveStride, (void*)0);
     glEnableVertexAttribArray(0);
 
-    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, stride, (void*)(3 * sizeof(float)));
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, microwaveStride, (void*)(3 * sizeof(float)));
     glEnableVertexAttribArray(1);
+
+    glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, microwaveStride, (void*)(6 * sizeof(float)));
+    glEnableVertexAttribArray(2);
 
     // Unbind the VAO (optional)
     glBindVertexArray(0);
@@ -699,10 +735,10 @@ int main(void)
     glBufferData(GL_ARRAY_BUFFER, sizeof(microwaveDoorVertices), microwaveDoorVertices, GL_STATIC_DRAW);
 
     // Define the vertex attribute for position (location = 0)
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, stride, (void*)0);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, doorStride, (void*)0);
     glEnableVertexAttribArray(0);
 
-    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, stride, (void*)(3 * sizeof(float)));
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, doorStride, (void*)(3 * sizeof(float)));
     glEnableVertexAttribArray(1);
 
     // Unbind the VAO (optional)
@@ -775,8 +811,6 @@ int main(void)
     glUniform3f(glGetUniformLocation(unifiedShader, "lightColor"), 1.0f, 1.0f, 1.0f);
     glUniform3fv(viewPosLoc, 1, glm::value_ptr(cameraPos));
 
-    glUniform3f(glGetUniformLocation(unifiedShader, "material.ambient"), microwaveRGB, microwaveRGB, microwaveRGB);
-    glUniform3f(glGetUniformLocation(unifiedShader, "material.diffuse"), microwaveRGB, microwaveRGB, microwaveRGB);
     glUniform3f(glGetUniformLocation(unifiedShader, "material.specular"), 0.5f, 0.5f, 0.5f);
     glUniform1f(glGetUniformLocation(unifiedShader, "material.shininess"), 32.0f);
     
@@ -928,7 +962,7 @@ int main(void)
 
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); //Osvjezavamo i Z bafer i bafer boje
 
-        drawCube(unifiedShader,VAO, model);
+        drawMicrowave(unifiedShader,VAO, model, microwaveFrontTex, microwaveBackTex);
 
         if (isOpening && doorAngle > -maxDoorAngle) {
             doorAngle -= doorSpeed * deltaTime; // Decrement angle to open to the left

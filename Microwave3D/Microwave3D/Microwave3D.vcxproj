@@ -186,6 +186,8 @@
     <Image Include="res\digital_number_o.png" />
     <Image Include="res\digital_number_r.png" />
     <Image Include="res\error.png" />
+    <Image Include="res\microwaveBack.jpg" />
+    <Image Include="res\microwaveFront.png" />
     <Image Include="res\name.png" />
     <Image Include="res\pause.png" />
     <Image Include="res\restart.png" />

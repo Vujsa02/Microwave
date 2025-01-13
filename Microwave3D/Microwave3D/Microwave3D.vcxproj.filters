@@ -193,5 +193,11 @@
     <Image Include="res\unactive_start.png">
       <Filter>Resource Files</Filter>
     </Image>
+    <Image Include="res\microwaveBack.jpg">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\microwaveFront.png">
+      <Filter>Resource Files</Filter>
+    </Image>
   </ItemGroup>
 </Project>
